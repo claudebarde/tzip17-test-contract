@@ -90,10 +90,10 @@ let transfer_presigned (params, s: transfer * storage): bool * storage =
     in
     if permit_submit_time = (0: timestamp)
     then
-        //(false, s)
-        let presigned_error (error_message, bytes_to_return: string * bytes): bool * storage =
+        (false, s)
+        (*let presigned_error (error_message, bytes_to_return: string * bytes): bool * storage =
             [%Michelson ({| { FAILWITH } |} : string * bytes -> bool * storage)] (error_message, bytes_to_return) 
-        in presigned_error (("NO_PERMIT_SUBMIT_TIME", params_hash))
+        in presigned_error (("NO_PERMIT_SUBMIT_TIME", params_hash))*)
     else
         // checks for permit expiry
         let effective_expiry =

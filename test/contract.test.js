@@ -134,6 +134,8 @@ describe(`Test of contracts having a permit for tzip-17:`, () => {
     test("Permit can be consumed", async () => {
         expect(contractAddress).not.toBeUndefined();
         const contract = await Tezos.contract.at(contractAddress);
+        const storage = await contract.storage();
+        console.log((await storage.balances.get(alice.pk)).toNumber());
         // changes the signer to test the permit
         const newSigner = new signer_1.InMemorySigner(bob.sk);
         Tezos.setSignerProvider(newSigner);
