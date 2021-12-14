@@ -95,7 +95,12 @@ let transfer (param, storage : transfer * storage) : result =
         | None -> 0n in
       let authorized_value =
         match is_nat (authorized_value - param.value) with
-        | None -> (failwith "NotEnoughAllowance" : nat)
+        | None -> 
+          //(failwith "NotEnoughAllowance" : nat)
+          let params_hash = Crypto.blake2b (Bytes.pack param) in
+          let presigned_error (error_message, bytes_to_return: string * bytes): nat =
+            [%Michelson ({| { FAILWITH } |} : string * bytes -> nat)] (error_message, bytes_to_return) 
+          in presigned_error (("NotEnoughAllowance", params_hash))
         | Some authorized_value -> authorized_value in
       Big_map.update allowance_key (positive authorized_value) allowances in
   let balances =

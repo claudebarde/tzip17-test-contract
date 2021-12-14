@@ -10,7 +10,7 @@
     "test": "npm run compile-contract-to-json && tsc && jest ./test/contract.test.js",
     "update-taquito": "ncu -u --target newest --filter '/^@taquito.*$/' && npm i",
     "compile-contract-to-json": "ligo compile-contract ./contract/FA1.2.mligo main > ./contract/contract.json --michelson-format=json",
-    "start-flextesa": "docker run --rm --name florence-sandbox --detach -p 20000:20000 tqtezos/flextesa:20210602 flobox start"
+    "start-flextesa": "docker run --rm --name hangzhou-sandbox --detach -p 20000:20000 tqtezos/flextesa:20211119 hangzbox start"
   },
   "keywords": [
     "Tezos",

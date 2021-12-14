@@ -3,10 +3,12 @@ import { InMemorySigner } from "@taquito/signer";
 import { char2Bytes } from "@taquito/utils";
 import { tzip17 } from "./taquito-tzip17/src/composer";
 import BigNumber from "bignumber.js";
+import { createPermit } from "./createPermit";
 // const { permit_fa12_smartpy } = require("../contract/contract.js");
 const permitContract = require("../contract/contract.json");
 
 let Tezos: TezosToolkit;
+let signer: InMemorySigner;
 const alice = {
   sk: "edsk3QoqBuvdamxouPhin7swCvkQNgq4jP5KZPbwWNnwdZpSpJiEbq",
   pk: "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"
@@ -19,12 +21,12 @@ const bob = {
 jest.setTimeout(50000);
 
 describe(`Test of contracts having a permit for tzip-17:`, () => {
-  let contractAddress: undefined | string;
+  let contractAddress = "";
   let permitData: { address: string; hash: string };
 
   beforeAll(async () => {
     Tezos = new TezosToolkit("http://localhost:20000");
-    const signer = new InMemorySigner(alice.sk);
+    signer = new InMemorySigner(alice.sk);
     Tezos.setSignerProvider(signer);
     const op = await Tezos.contract.transfer({ to: bob.pk, amount: 1 });
     await op.confirmation();
@@ -69,31 +71,34 @@ describe(`Test of contracts having a permit for tzip-17:`, () => {
     await op.confirmation();
     expect(op.hash).toBeDefined();
     expect(op.includedInBlock).toBeLessThan(Number.POSITIVE_INFINITY);
+    expect(op.contractAddress).toBeDefined();
 
-    contractAddress = op.contractAddress;
+    if (op.contractAddress) {
+      contractAddress = op.contractAddress;
 
-    // mints tokens to be transferred later in test
-    const contract = await op.contract();
-    let balance: BigNumber | undefined;
-    const recipient = alice.pk;
-    const storage: any = await contract.storage();
-    balance = await storage.balances.get(recipient);
-    expect(balance).toBeUndefined();
-    try {
-      const mintingOp = await contract.methods.mint(recipient, 200).send();
-      await mintingOp.confirmation();
-    } catch (error) {
-      console.log(error);
+      // mints tokens to be transferred later in test
+      const contract = await op.contract();
+      let balance: BigNumber | undefined;
+      const recipient = alice.pk;
+      const storage: any = await contract.storage();
+      balance = await storage.balances.get(recipient);
+      expect(balance).toBeUndefined();
+      try {
+        const mintingOp = await contract.methods.mint(recipient, 200).send();
+        await mintingOp.confirmation();
+      } catch (error) {
+        console.log(error);
+      }
+      const newStorage: any = await contract.storage();
+      balance = await newStorage.balances.get(recipient);
+      expect(balance).not.toBeUndefined();
     }
-    const newStorage: any = await contract.storage();
-    balance = await newStorage.balances.get(recipient);
-    expect(balance).not.toBeUndefined();
   });
 
   test("Transfers work properly", async () => {
-    expect(contractAddress).not.toBeUndefined();
+    expect(contractAddress).toBeDefined();
     // transferring Alice's tokens to Bob
-    const contract = await Tezos.contract.at(contractAddress as string);
+    const contract = await Tezos.contract.at(contractAddress);
 
     const initialStorage: any = await contract.storage();
     const bobInitialBalance = await initialStorage.balances.get(bob.pk);
@@ -111,15 +116,25 @@ describe(`Test of contracts having a permit for tzip-17:`, () => {
   });
 
   test("Permit can be submitted and set", async () => {
-    expect(contractAddress).not.toBeUndefined();
-    const contract = await Tezos.contract.at(contractAddress as string, tzip17);
+    expect(contractAddress).toBeDefined();
+    const contract = await Tezos.contract.at(contractAddress, tzip17);
     try {
       const permit = await contract
         .tzip17()
         .methods.transfer(alice.pk, bob.pk, 14)
         .createPermit();
       permitData = { address: alice.pk, hash: permit.methodHash };
-      console.log("Permit param hash:", permit);
+      /*console.log("TZIP-17 package param hash:", permit);
+      console.log(
+        "Original param hash:",
+        await createPermit(
+          contractAddress,
+          "transfer",
+          [alice.pk, bob.pk, 14],
+          Tezos,
+          signer
+        )
+      );*/
       const permitOp = await contract.methods
         .permit([
           { 0: permit.publicKey, 1: permit.signature, 2: permit.methodHash }

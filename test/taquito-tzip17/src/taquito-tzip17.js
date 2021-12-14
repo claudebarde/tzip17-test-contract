@@ -78,7 +78,8 @@ class ContractMethodTzip17 {
     }
     async prepareMethodHash() {
         const packedParam = await this.packTransfeerParam();
-        return (0, utils_1.buf2hex)(Buffer.from((0, blakejs_1.blake2b)(packedParam)));
+        //return buf2hex(Buffer.from(blake2b(packedParam)));
+        return (0, utils_1.buf2hex)((0, blakejs_1.blake2b)((0, utils_1.hex2buf)(packedParam), undefined, 32).buffer);
     }
     async packData(methodHash) {
         const chainId = await this.context.rpc.getChainId();
