@@ -163,6 +163,18 @@ describe(`Test of contracts having a permit for tzip-17:`, () => {
     // changes the signer to test the permit
     const newSigner = new InMemorySigner(bob.sk);
     Tezos.setSignerProvider(newSigner);
+    // this should not work
+    expect(async () => {
+      const op = await contract.methods.transfer(alice.pk, bob.pk, 15).send();
+      await op.confirmation();
+    }).rejects;
+    /*try {
+      const op = await contract.methods.transfer(alice.pk, bob.pk, 15).send();
+      await op.confirmation();
+    } catch (error) {
+      console.error(error);
+    }*/
+    // this should work
     try {
       const op = await contract.methods.transfer(alice.pk, bob.pk, 14).send();
       await op.confirmation();

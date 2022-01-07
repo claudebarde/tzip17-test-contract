@@ -82,8 +82,8 @@ let positive (n : nat) : nat option =
 
 let transfer (param, storage : transfer * storage) : result =
   let (is_transfer_authorized, new_storage) = transfer_presigned (param, storage) in
-  let allowances = storage.allowances in
-  let balances = storage.balances in
+  let allowances = new_storage.allowances in
+  let balances = new_storage.balances in
   let allowances =
     if Tezos.sender = param.address_from || is_transfer_authorized
     then allowances
@@ -120,7 +120,7 @@ let transfer (param, storage : transfer * storage) : result =
       | None -> 0n in
     let to_balance = to_balance + param.value in
     Big_map.update param.address_to (positive to_balance) balances in
-(([] : operation list), { storage with balances = balances; allowances = allowances })
+(([] : operation list), { new_storage with balances = balances; allowances = allowances })
 
 let approve (param, storage : approve * storage) : result =
   let allowances = storage.allowances in
