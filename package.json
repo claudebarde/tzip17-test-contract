@@ -4,13 +4,13 @@
   "description": "A Tezos FA2 token with a built-in XTZ <-> token exchange",
   "main": "index.js",
   "scripts": {
-    "watch": "nodemon --exec ligo compile-contract ./contract/main.mligo main",
-    "watch-test": "nodemon --exec ligo test ./contract/test.mligo",
+    "watch": "nodemon --exec ligo compile contract ./contract/main.mligo main",
+    "watch-test": "nodemon --exec ligo run test ./contract/test.mligo",
     "init-test": "npm run start-flextesa && npm run test",
     "test": "npm run compile-contract-to-json && tsc && jest ./test/contract.test.js",
     "update-taquito": "ncu -u --target newest --filter '/^@taquito.*$/' && npm i",
-    "compile-contract-to-json": "ligo compile-contract ./contract/FA1.2.mligo main > ./contract/contract.json --michelson-format=json",
-    "start-flextesa": "docker run --rm --name hangzhou-sandbox --detach -p 20000:20000 tqtezos/flextesa:20211119 hangzbox start"
+    "compile-contract-to-json": "ligo compile contract ./contract/FA1.2.mligo --michelson-format json > ./contract/contract.json",
+    "start-flextesa": "docker run --rm --name ithaca-sandbox --detach -p 20000:20000 oxheadalpha/flextesa:20220321 ithacabox start"
   },
   "keywords": [
     "Tezos",
@@ -30,6 +30,8 @@
     "@types/lodash.camelcase": "^4.3.6",
     "@types/rollup-plugin-json": "^3.0.3",
     "jest": "^27.2.4",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-typescript2": "^0.31.2",
     "typescript": "^4.4.3"
   }
 }
